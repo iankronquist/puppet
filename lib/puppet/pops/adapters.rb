@@ -118,4 +118,16 @@ module Puppet::Pops::Adapters
     # @return [Puppet::Pops::Loader::Loader] the loader
     attr_accessor :loader
   end
+
+  # A CoverageAdapter counts the number of times an expression is evaluated
+  # during testing. This is used for determining test coverage on a code base.
+  class CoverageAdapter < Puppet::Pops::Adaptable::Adapter
+    # @return [Integer] The number of times the expression the object
+    # represents was evaluated.
+    attr_accessor :count
+
+    def increment
+      @count = @count ? @count + 1 : 1
+    end
+  end
 end
