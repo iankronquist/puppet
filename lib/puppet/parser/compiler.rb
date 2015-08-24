@@ -397,6 +397,55 @@ class Puppet::Parser::Compiler
     end
   end
 
+  def iter_children(nodes)
+    total_nodes = 0
+    hit_nodes = 0
+    nodes.each do |model|
+        #require 'pry'; binding.pry
+      hit_nodes += 1 if (get_counts model)
+      total_nodes += 1
+      p_total, p_hit = iter_children model.eContents
+      total_nodes += p_total
+      hit_nodes += p_hit
+    end
+    [total_nodes, hit_nodes]
+  end
+
+  def fetch_programs(known_resource_types)
+    programs = Set.new
+    # FIXME: This will only iterate over hostclasses. I can look at
+    known_resource_types.hostclasses.each_value do |hc|
+      code = hc.code
+      if code != nil
+        # find the root node of the code.
+        while code.parent != nil
+          code = code.parent
+        end
+        programs << code
+      end
+    end
+    programs
+  end
+
+  def determine_percentage programs
+    total_nodes = 0
+    hit_nodes = 0
+    programs.each do |p|
+      model = p.program_model
+      hit_nodes += 1 if (get_counts model)
+      total_nodes += 1
+      p_total, p_hit = iter_children model.eAllContents
+      total_nodes += p_total
+      hit_nodes += p_hit
+    end
+    [total_nodes, hit_nodes]
+  end
+
+  def get_counts model
+    adapted = Puppet::Pops::Adapters::CoverageAdapter.adapt(model)
+    adapted.count
+  end
+
   # Find and evaluate our main object, if possible.
   def evaluate_main
     @main = known_resource_types.find_hostclass("") || known_resource_types.add(Puppet::Resource::Type.new(:hostclass, ""))
@@ -407,6 +456,11 @@ class Puppet::Parser::Compiler
     add_resource(@topscope, @main_resource)
 
     @main_resource.evaluate
+    programs = fetch_programs known_resource_types
+    total_nodes, hit_nodes = determine_percentage programs
+    puts "#{hit_nodes}/#{total_nodes}"
+    puts "#{hit_nodes.to_f/total_nodes*100.0}%"
+    nil
   end
 
   # Make sure the entire catalog is evaluated.
