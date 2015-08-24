@@ -69,6 +69,9 @@ class Puppet::Pops::Evaluator::EvaluatorImpl
   # @api public
   #
   def evaluate(target, scope)
+    # NOTE: THIS IS EXPERIMENTAL! This is only here for testing.
+    coverage_adapter = Puppet::Pops::Adapters::CoverageAdapter.adapt(target)
+    coverage_adapter.increment
     begin
       @@eval_visitor.visit_this_1(self, target, scope)
 
