@@ -397,18 +397,18 @@ class Puppet::Parser::Compiler
     end
   end
 
-  def iter_children(nodes)
-    total_nodes = 0
-    hit_nodes = 0
-    nodes.each do |model|
+  def iter_children(models)
+    total_models = 0
+    evaluated_models = 0
+    models.each do |model|
         #require 'pry'; binding.pry
-      hit_nodes += 1 if (get_counts model)
-      total_nodes += 1
-      p_total, p_hit = iter_children model.eContents
-      total_nodes += p_total
-      hit_nodes += p_hit
+      evaluated_models += 1 if get_counts(model)
+      total_models += 1
+      p_total, p_hit = iter_children model.eAllContents
+      total_models += p_total
+      evaluated_models += p_hit
     end
-    [total_nodes, hit_nodes]
+    [total_models, evaluated_models]
   end
 
   def fetch_programs(known_resource_types)
@@ -428,17 +428,17 @@ class Puppet::Parser::Compiler
   end
 
   def determine_percentage programs
-    total_nodes = 0
-    hit_nodes = 0
+    total_models = 0
+    evaluated_models = 0
     programs.each do |p|
       model = p.program_model
-      hit_nodes += 1 if (get_counts model)
-      total_nodes += 1
-      p_total, p_hit = iter_children model.eAllContents
-      total_nodes += p_total
-      hit_nodes += p_hit
+      evaluated_models += 1 if (get_counts model)
+      total_models += 1
+      p_total, p_evaluated = iter_children model.eAllContents
+      total_models += p_total
+      evaluated_models += p_evaluated
     end
-    [total_nodes, hit_nodes]
+    [total_models, evaluated_models]
   end
 
   def get_counts model
