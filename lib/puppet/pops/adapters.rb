@@ -126,8 +126,12 @@ module Puppet::Pops::Adapters
     # represents was evaluated.
     attr_accessor :count
 
+    def initialize
+      @count = 0
+    end
+
     def increment
-      @count = @count ? @count + 1 : 1
+      @count += 1
     end
   end
 end
